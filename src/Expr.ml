@@ -50,5 +50,30 @@ let _ =
    Takes a state and an expression, and returns the value of the expression in 
    the given state.
 *)
-let eval = failwith "Not implemented yet"
-                    
+
+let to_int x = if x then 1 else 0
+let to_bool_int x = if x <> 0 then 1 else 0
+
+let token_to_binop s = 
+    match s with
+    | "+"  -> ( + )
+    | "-"  -> ( - )
+    | "*"  -> ( * )
+    | "/"  -> ( / )
+    | "%"  -> ( mod )
+    | ">"  -> fun l r -> to_int (l > r)
+    | "<"  -> fun l r -> to_int (l < r)
+    | ">=" -> fun l r -> to_int (l >= r)
+    | "<=" -> fun l r -> to_int (l <= r)
+    | "==" -> fun l r -> to_int (l == r)
+    | "!=" -> fun l r -> to_int (l != r)
+    | "&&" -> fun l r -> ((to_bool_int l) land (to_bool_int r))
+    | "!!" -> fun l r -> ((to_bool_int l) lor (to_bool_int r))
+    | _ -> failwith (Printf.sprintf "Unsupported operator %s" s)
+
+let rec eval s e =
+     match e with
+     | Const value -> value
+     | Var varname -> s varname
+     | Binop (token, l, r) -> (token_to_binop token) (eval s l) (eval s r)    
+	 
