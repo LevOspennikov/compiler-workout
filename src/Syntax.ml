@@ -2,6 +2,7 @@
    The library provides "@type ..." syntax extension and plugins like show, etc.
 *)
 open GT 
+open List
     
 (* Simple expressions: syntax and semantics *)
 module Expr =
@@ -41,7 +42,31 @@ module Expr =
        Takes a state and an expression, and returns the value of the expression in 
        the given state.
     *)
-    let eval _ = failwith "Not implemented yet"
+    let to_int x = if x then 1 else 0
+    let to_bool_int x = if x <> 0 then 1 else 0
+
+    let token_to_binop s = 
+        match s with
+        | "+"  -> ( + )
+        | "-"  -> ( - )
+        | "*"  -> ( * )
+        | "/"  -> ( / )
+        | "%"  -> ( mod )
+        | ">"  -> fun l r -> to_int (l > r)
+        | "<"  -> fun l r -> to_int (l < r)
+        | ">=" -> fun l r -> to_int (l >= r)
+        | "<=" -> fun l r -> to_int (l <= r)
+        | "==" -> fun l r -> to_int (l == r)
+        | "!=" -> fun l r -> to_int (l != r)
+        | "&&" -> fun l r -> ((to_bool_int l) land (to_bool_int r))
+        | "!!" -> fun l r -> ((to_bool_int l) lor (to_bool_int r))
+        | _ -> failwith (Printf.sprintf "Unsupported operator %s" s)
+
+    let rec eval s e =
+        match e with
+        | Const value -> value
+        | Var varname -> s varname
+        | Binop (token, l, r) -> (token_to_binop token) (eval s l) (eval s r)  
 
   end
                     
@@ -65,7 +90,12 @@ module Stmt =
 
        Takes a configuration and a statement, and returns another configuration
     *)
-    let eval _ = failwith "Not implemented yet"
+    let rec eval (state, input, output) stat = 
+    match stat with
+      | Read name -> (Expr.update name (hd input) state, tl input, output)
+      | Write expr -> (state, input, Expr.eval state expr :: output)
+      | Assign (name, expr) -> (Expr.update name (Expr.eval state expr) state, input, output)
+      | Seq (left, right) -> eval (eval (state, input, output) left) right
                                                          
   end
 
