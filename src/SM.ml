@@ -1,6 +1,11 @@
 open GT       
+<<<<<<< HEAD
 open List
 
+=======
+open Language
+       
+>>>>>>> 679ad67411e29a42b11bdf1cefb9a6211038a63b
 (* The type for the stack machine instructions *)
 @type insn =
 (* binary operator                 *) | BINOP of string
@@ -16,7 +21,7 @@ type prg = insn list
 (* The type for the stack machine configuration: a stack and a configuration from statement
    interpreter
  *)
-type config = int list * Syntax.Stmt.config
+type config = int list * Stmt.config
 
 (* Stack machine interpreter
 
@@ -43,19 +48,20 @@ let rec eval config programm =
 
 (* Top-level evaluation
 
-     val run : int list -> prg -> int list
+     val run : prg -> int list -> int list
 
-   Takes an input stream, a program, and returns an output stream this program calculates
+   Takes a program, an input stream, and returns an output stream this program calculates
 *)
-let run i p = let (_, (_, _, o)) = eval ([], (Syntax.Expr.empty, i, [])) p in o
+let run p i = let (_, (_, _, o)) = eval ([], (Language.Expr.empty, i, [])) p in o
 
 (* Stack machine compiler
 
-     val compile : Syntax.Stmt.t -> prg
+     val compile : Language.Stmt.t -> prg
 
    Takes a program in the source language and returns an equivalent program for the
    stack machine
  *)
+<<<<<<< HEAD
 
 let rec compileExpr expr = 
 		match expr with
@@ -69,3 +75,6 @@ let rec compile stmt =
 		| Syntax.Stmt.Write x -> compileExpr x @ [WRITE]
 		| Syntax.Stmt.Assign (x, y) -> compileExpr y @ [ST x]
 		| Syntax.Stmt.Seq (left, right) -> compile left @ compile right;;
+=======
+let compile _ = failwith "Not yet implemented"
+>>>>>>> 679ad67411e29a42b11bdf1cefb9a6211038a63b

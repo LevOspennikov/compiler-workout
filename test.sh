@@ -1,0 +1,1 @@
+make clean && make && cd ./regression && ./test.sh && cd ..
