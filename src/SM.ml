@@ -1,11 +1,8 @@
 open GT       
-<<<<<<< HEAD
 open List
 
-=======
 open Language
        
->>>>>>> 679ad67411e29a42b11bdf1cefb9a6211038a63b
 (* The type for the stack machine instructions *)
 @type insn =
 (* binary operator                 *) | BINOP of string
@@ -61,7 +58,6 @@ let run p i = let (_, (_, _, o)) = eval ([], (Language.Expr.empty, i, [])) p in 
    Takes a program in the source language and returns an equivalent program for the
    stack machine
  *)
-<<<<<<< HEAD
 
 let rec compileExpr expr = 
 		match expr with
@@ -75,6 +71,3 @@ let rec compile stmt =
 		| Syntax.Stmt.Write x -> compileExpr x @ [WRITE]
 		| Syntax.Stmt.Assign (x, y) -> compileExpr y @ [ST x]
 		| Syntax.Stmt.Seq (left, right) -> compile left @ compile right;;
-=======
-let compile _ = failwith "Not yet implemented"
->>>>>>> 679ad67411e29a42b11bdf1cefb9a6211038a63b

@@ -1,17 +1,11 @@
 (* Opening a library for generic programming (https://github.com/dboulytchev/GT).
    The library provides "@type ..." syntax extension and plugins like show, etc.
 *)
-<<<<<<< HEAD:src/Syntax.ml
-open GT 
-open List
-    
-=======
 open GT
 
 (* Opening a library for combinator-based syntax analysis *)
 open Ostap.Combinators
        
->>>>>>> 679ad67411e29a42b11bdf1cefb9a6211038a63b:src/Language.ml
 (* Simple expressions: syntax and semantics *)
 module Expr =
   struct
