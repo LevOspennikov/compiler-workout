@@ -102,7 +102,7 @@ module Stmt =
 
        Takes a configuration and a statement, and returns another configuration
     *)
-<<<<<<< HEAD:src/Syntax.ml
+
     let rec eval (state, input, output) stat = 
     match stat with
       | Read name -> (Expr.update name (hd input) state, tl input, output)
@@ -110,15 +110,12 @@ module Stmt =
       | Assign (name, expr) -> (Expr.update name (Expr.eval state expr) state, input, output)
       | Seq (left, right) -> eval (eval (state, input, output) left) right
                                                          
-=======
-    let eval _ = failwith "Not implemented yet"
 
     (* Statement parser *)
     ostap (
       parse: empty {failwith "Not implemented yet"}
     )
       
->>>>>>> 679ad67411e29a42b11bdf1cefb9a6211038a63b:src/Language.ml
   end
 
 (* The top-level definitions *)
