@@ -73,14 +73,60 @@ let show instr =
 (* Opening stack machine to use instructions without fully qualified names *)
 open SM
 
-(* Symbolic stack machine evaluator
+let op_to_cmp op = match op with
+    | "==" -> "e"
+    | "!=" -> "ne"
+    | "<"  -> "l"
+    | "<=" -> "le"
+    | ">"  -> "g"
+    | ">=" -> "ge"
+    | _    -> failwith (Printf.sprintf "Unknown compare sign %s" op)
 
-     compile : env -> prg -> env * instr list
+let cmp op l r opnd : instr list =
+   [Mov (L 0, eax); Binop ("cmp", r, l); Set (op_to_cmp op, "%al"); Mov (eax, opnd)]
 
-   Take an environment, a stack machine program, and returns a pair --- the updated environment and the list
-   of x86 instructions
-*)
-let compile _ _ = failwith "Not yet implemented"
+let join head (env, tail) = env, (head @ tail)
+
+let compile_binop op env =
+  let r, l, env = env#pop2 in
+  let opnd, env' = env#allocate in
+  let instr    = match op with
+  | "+" | "-" | "*" -> (match l, r with
+      | S _, S _ -> [Mov (l, eax); Binop (op, r, eax); Mov (eax, opnd)]
+      | _        -> [Binop (op, r, l); Mov (l, opnd)]
+  )
+  | "/" | "%" -> let output = if op = "/" then eax else edx
+                 in [Mov (l, eax); Mov (L 0, edx); Cltd; IDiv r; Mov (output, opnd)]
+  | "<" | "<=" | ">" | ">=" | "==" | "!=" -> (match l, r with
+      | S _, S _ -> [Mov (l, edx)] @ cmp op l r opnd
+      | _          -> cmp op l r opnd
+  )
+  | "&&" -> [Mov (L 0, eax); Mov (L 0, edx);
+             Binop ("cmp", L 0, l); Set ("ne", "%al");
+             Binop ("cmp", L 0, r); Set ("ne", "%dl");
+             Binop ("&&", eax, edx); Mov (eax, opnd)]
+  | "!!" -> [Mov (L 0, eax); Mov (l, edx); Binop ("!!", r, edx); Set ("nz", "%al"); Mov (eax, opnd)]
+  | _    -> failwith (Printf.sprintf "Unknown Binop %s" op)
+  in env', instr
+
+let rec compile env programs = match programs with
+  | [] -> env, []
+  | program::other ->
+    let result_env, prg  = (match program with
+      | BINOP op -> compile_binop op env
+      | CONST c  -> let operand, env' = env#allocate
+                    in env', [Mov (L c, operand)]
+      | READ     -> let operand, env' = env#allocate
+                    in env', [Call "Lread"; Mov (eax, operand)]
+      | WRITE    -> let operand, env' = env#pop
+                    in env', [Push operand; Call "Lwrite"; Pop eax]
+      | LD s     -> let operand, env' = (env#global s)#allocate
+                    in let var_name = env#loc s
+                    in env', [Mov ((M var_name), operand)]
+      | ST s     -> let operand, env' = (env#global s)#pop
+                    in let var_name = env#loc s
+                    in env', [Mov (operand, (M var_name))]
+    ) in join prg (compile result_env other)
 
 (* A set of strings *)           
 module S = Set.Make (String)
