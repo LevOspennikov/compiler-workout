@@ -65,7 +65,7 @@ module Expr =
     (* Expression parser. You can use the following terminals:
          IDENT   --- a non-empty identifier a-zA-Z[a-zA-Z0-9_]* as a string
          DECIMAL --- a decimal constant [0-9]+ as a string
-   
+                                                                                                                  
     *)
     let parseBinop token = ostap(- $(token)), fun l r -> Binop (token, l, r)
 
@@ -87,7 +87,7 @@ module Expr =
 
       primary: x:IDENT {Var x} | c:DECIMAL {Const c} | -"(" expr -")"
     )
-
+    
   end
                     
 (* Simple statements: syntax and sematics *)
@@ -137,3 +137,6 @@ type t = Stmt.t
 *)
 let eval p i =
   let _, _, o = Stmt.eval (Expr.empty, i, []) p in o
+
+(* Top-level parser *)
+let parse = Stmt.parse                                                     

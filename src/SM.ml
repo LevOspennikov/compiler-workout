@@ -43,22 +43,21 @@ let rec eval config programm =
      val run : prg -> int list -> int list
    Takes a program, an input stream, and returns an output stream this program calculates
 *)
-let run p i = let (_, (_, _, o)) = eval ([], (Language.Expr.empty, i, [])) p in o
+let run p i = let (_, (_, _, o)) = eval ([], (Expr.empty, i, [])) p in o
 
 (* Stack machine compiler
      val compile : Language.Stmt.t -> prg
    Takes a program in the source language and returns an equivalent program for the
    stack machine
- *)
-let rec compileExpr expr = 
-		match expr with
-		| Expr.Const c -> [CONST c]
-		| Expr.Var x -> [LD x]
-		| Expr.Binop (operate, left, right) -> compileExpr left @ compileExpr right @ [BINOP operate]
-
-let rec compile stmt = 
-	match stmt with
-		| Stmt.Read x -> [READ; ST x]
-		| Stmt.Write x -> compileExpr x @ [WRITE]
-		| Stmt.Assign (x, y) -> compileExpr y @ [ST x]
-		| Stmt.Seq (left, right) -> compile left @ compile right;; 
+*)
+let rec compile =
+  let rec expr = function
+  | Expr.Var   x          -> [LD x]
+  | Expr.Const n          -> [CONST n]
+  | Expr.Binop (op, x, y) -> expr x @ expr y @ [BINOP op]
+  in
+  function
+  | Stmt.Seq (s1, s2)  -> compile s1 @ compile s2
+  | Stmt.Read x        -> [READ; ST x]
+  | Stmt.Write e       -> expr e @ [WRITE]
+  | Stmt.Assign (x, e) -> expr e @ [ST x]
